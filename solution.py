@@ -1,9 +1,9 @@
-
 rows = 'ABCDEFGHI'
 cols = '123456789'
 assignments = []
 
-def assign_value(values:dict, box:str, value:str):
+
+def assign_value(values: dict, box: str, value: str):
     """
     Please use this function to update your values dictionary!
     Assigns a value to a given box. If it updates the board record it.
@@ -13,7 +13,8 @@ def assign_value(values:dict, box:str, value:str):
         assignments.append(values.copy())
     return values
 
-def naked_twins(values:dict):
+
+def naked_twins(values: dict):
     """Eliminate values using the naked twins strategy.
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
@@ -35,64 +36,59 @@ def naked_twins(values:dict):
         #             potential_twins.append(values[u])
 
         # find all values that have exactly 2 possibilities
-        potential_twins = [values[u] for u in unit if len(values[u])==2]
+        potential_twins = [values[u] for u in unit if len(values[u]) == 2]
         # find which of the possibilities have multiple entries in the unit
-        actual_twins = set([x for n,x in enumerate(potential_twins) if x in potential_twins[:n]])
+        actual_twins = set([x for n, x in enumerate(potential_twins) if x in potential_twins[:n]])
         # Eliminate the naked twins as possibilities for their peers
         for twin_value in actual_twins:
-            for peer in unit: # by peers, mean peers within unit and NOT all peers
+            for peer in unit:  # by peers, mean peers within unit and NOT all peers
                 # remove digit from peer if peer is not solved and is not the other twin
-                if len(values[peer])>1 and values[peer] != twin_value:
+                if len(values[peer]) > 1 and values[peer] != twin_value:
                     for digit in twin_value:
-                        values = assign_value(values,peer,values[peer].replace(digit,''))
+                        values = assign_value(values, peer, values[peer].replace(digit, ''))
 
     return values
 
-    # for unit in unitlist:
-    #     for digit in '123456789':
-    #         dplaces = [box for box in unit if digit in values[box]]
-    #         if len(dplaces) == 2:
-    #
-    # for box in twin_values:
-    #     digits = values[box]
-    #
-    #     for peer in peers[box]:
-    #         if values[peer] == digits:
-    #
-    #         #assign_value(values,peer,values[peer].replace(digit,''))
-
-
 
 def cross(a, b):
-    return [s+t for s in a for t in b]
+    return [s + t for s in a for t in b]
+
 
 # Define general properties of sudoku board which are used in the functions
-
 boxes = cross(rows, cols)
 
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-unitlist = row_units + column_units + square_units
+square_units = [cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
+diagonal_units = list()
+# rightwards facing diagonal and leftwards facing diagonal (reversed rows)
+for row in [rows, rows[::-1]]:
+    # convert strs to lists for zip below
+    r = list(row)
+    c = list(cols)
+    d = ['%s%s' % t for t in zip(r, c)]
+    diagonal_units.append(d)
+unitlist = row_units + column_units + square_units + diagonal_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
-peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+peers = dict((s, set(sum(units[s], [])) - set([s])) for s in boxes)
 
 
-def display(values:dict):
+def display(values: dict):
     """
     Display the values as a 2-D grid.
     Input: The sudoku in dictionary form
     Output: None
     """
-    width = 1+max(len(values[s]) for s in boxes)
-    line = '+'.join(['-'*(width*3)]*3)
+    width = 1 + max(len(values[s]) for s in boxes)
+    line = '+'.join(['-' * (width * 3)] * 3)
     for r in rows:
-        print(''.join(values[r+c].center(width)+('|' if c in '36' else '')
+        print(''.join(values[r + c].center(width) + ('|' if c in '36' else '')
                       for c in cols))
-        if r in 'CF': print(line)
-    print
+        if r in 'CF':
+            print(line)
 
-def grid_values(grid:str):
+
+def grid_values(grid: str):
     """
     Convert grid into a dict of {square: char} with '123456789' for empties.
     Input: A grid in string form.
@@ -114,7 +110,8 @@ def grid_values(grid:str):
     # assert len(values) == 81
     # return dict(zip(boxes, values))
 
-def eliminate(values:dict):
+
+def eliminate(values: dict):
     """
     Go through all the boxes, and whenever there is a box with a value, eliminate this value from the values of all its peers.
     Input: A sudoku in dictionary form.
@@ -124,24 +121,25 @@ def eliminate(values:dict):
     for box in solved_values:
         digit = values[box]
         for peer in peers[box]:
-            # values[peer] = values[peer].replace(digit,'')
-            values = assign_value(values,peer,values[peer].replace(digit,''))
+            values = assign_value(values, peer, values[peer].replace(digit, ''))
     return values
 
-def only_choice(values:dict):
+
+def only_choice(values: dict):
     """
     Go through all the units, and whenever there is a unit with a value that only fits in one box, assign the value to this box.
     Input: A sudoku in dictionary form.
     Output: The resulting sudoku in dictionary form.
     """
     for unit in unitlist:
-        digits = dict(zip('123456789',[list([]) for _ in range(9)]))
+        # create a dict of digits to count appearances
+        digits = dict(zip('123456789', [list([]) for _ in range(9)]))
         for u in unit:
             for digit in values[u]:
                 digits[digit].append(u)
-        for digit,box_list in digits.items():
-            if len(box_list)==1:
-                values = assign_value(values,box_list[0],digit)
+        for digit, box_list in digits.items():
+            if len(box_list) == 1:
+                values = assign_value(values, box_list[0], digit)
     return values
     # solution.py version:
     # for unit in unitlist:
@@ -151,7 +149,8 @@ def only_choice(values:dict):
     #             assign_value(values,dplaces[0],digit)
     # return values
 
-def reduce_puzzle(values:dict):
+
+def reduce_puzzle(values: dict):
     """
     Iterate eliminate() and only_choice(). If at some point, there is a box with no available values, return False.
     If the sudoku is solved, return the sudoku.
@@ -159,7 +158,6 @@ def reduce_puzzle(values:dict):
     Input: A sudoku in dictionary form.
     Output: The resulting sudoku in dictionary form.
     """
-    solved_values = [box for box in values.keys() if len(values[box]) == 1]
     stalled = False
     while not stalled:
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
@@ -172,16 +170,17 @@ def reduce_puzzle(values:dict):
             return False
     return values
 
-def search(values:dict):
+
+def search(values: dict):
     "Using depth-first search and propagation, create a search tree and solve the sudoku."
     # First, reduce the puzzle using the previous function
     values = reduce_puzzle(values)
     if values is False:
-        return False ## Failed earlier
+        return False  ## Failed earlier
     if all(len(values[s]) == 1 for s in boxes):
-        return values ## Solved!
+        return values  ## Solved!
     # Choose one of the unfilled squares with the fewest possibilities
-    n,s = min((len(values[s]), s) for s in boxes if len(values[s]) > 1)
+    n, s = min((len(values[s]), s) for s in boxes if len(values[s]) > 1)
     # Now use recurrence to solve each one of the resulting sudokus, and
     for value in values[s]:
         new_sudoku = values.copy()
@@ -190,7 +189,8 @@ def search(values:dict):
         if attempt:
             return attempt
 
-def solve(grid:str):
+
+def solve(grid: str):
     """
     Find the solution to a Sudoku grid.
     Args:
@@ -203,29 +203,18 @@ def solve(grid:str):
     values = search(values)
     return values
 
-def validate(values:dict):
-    return sum([sum(int(values[u]) for u in units) for units in unitlist])==45*len(unitlist)
+
+def validateSum(values: dict):
+    return sum([sum(int(values[u]) for u in units) for units in unitlist]) == 45 * len(unitlist)
+
 
 if __name__ == '__main__':
-    before_naked_twins_1 = {'I6': '4', 'H9': '3', 'I2': '6', 'E8': '1', 'H3': '5', 'H7': '8', 'I7': '1', 'I4': '8',
-                            'H5': '6', 'F9': '7', 'G7': '6', 'G6': '3', 'G5': '2', 'E1': '8', 'G3': '1', 'G2': '8',
-                            'G1': '7', 'I1': '23', 'C8': '5', 'I3': '23', 'E5': '347', 'I5': '5', 'C9': '1', 'G9': '5',
-                            'G8': '4', 'A1': '1', 'A3': '4', 'A2': '237', 'A5': '9', 'A4': '2357', 'A7': '27',
-                            'A6': '257', 'C3': '8', 'C2': '237', 'C1': '23', 'E6': '579', 'C7': '9', 'C6': '6',
-                            'C5': '37', 'C4': '4', 'I9': '9', 'D8': '8', 'I8': '7', 'E4': '6', 'D9': '6', 'H8': '2',
-                            'F6': '125', 'A9': '8', 'G4': '9', 'A8': '6', 'E7': '345', 'E3': '379', 'F1': '6',
-                            'F2': '4', 'F3': '23', 'F4': '1235', 'F5': '8', 'E2': '37', 'F7': '35', 'F8': '9',
-                            'D2': '1', 'H1': '4', 'H6': '17', 'H2': '9', 'H4': '17', 'D3': '2379', 'B4': '27',
-                            'B5': '1', 'B6': '8', 'B7': '27', 'E9': '2', 'B1': '9', 'B2': '5', 'B3': '6', 'D6': '279',
-                            'D7': '34', 'D4': '237', 'D5': '347', 'B8': '3', 'B9': '4', 'D1': '5'}
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    # display(solve(diag_sudoku_grid))
-    ans = naked_twins(before_naked_twins_1)
-    display(before_naked_twins_1)
+    display(solve(diag_sudoku_grid))
 
-    print("Valid (every unit adds to 45): {}".format(validate(ans)))
     try:
         from visualize import visualize_assignments
+
         visualize_assignments(assignments)
 
     except SystemExit:
