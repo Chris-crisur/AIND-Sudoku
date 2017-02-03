@@ -3,11 +3,11 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
+A: The scope of the local constraint we search now includes finding naked twins within a unit. That is, we can search within a unit to see if it satisfies the naked twins requirement, and reduce the number of possibilities in other units accordingly. The affected units are therefore constrained by the naked twins. 
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
+A: The same techniques apply, but now they must ALSO apply to an additional set of units (the diagonals). Thus, there is an additional constraint space (the diagonal units) that must be met. Less possibilities are therefore possible because of the additional diagonal requirement. 
 
 ### Install
 
